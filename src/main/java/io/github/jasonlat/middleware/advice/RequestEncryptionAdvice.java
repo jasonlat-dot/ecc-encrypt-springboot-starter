@@ -88,10 +88,8 @@ public final class RequestEncryptionAdvice implements ResponseBodyAdvice<Object>
         if (annotation == null) {
             return false;
         }
-        // The request header obtains the user public key
-        UserPublicData currentUserPublicData = contextHolder.getAuthenticationUserPublicData();
-        if (currentUserPublicData == null || !StringUtils.hasLength(currentUserPublicData.getX()) || !StringUtils.hasLength(currentUserPublicData.getY())) {
-            logger.warn("user public key is empty, ignore request encryption");
+        if (annotation.notCertified() && !StringUtils.hasLength(annotation.user())) {
+            logger.warn("not certified request encryption, need designate user().");
             return false;
         }
 
@@ -248,7 +246,7 @@ public final class RequestEncryptionAdvice implements ResponseBodyAdvice<Object>
         if (annotation.enableLog()) {
             logger.info("data encrypt begin ...... ");
         }
-        return encryptWithECC(data);
+        return encryptWithECC(data, annotation);
     }
     
     /**
@@ -257,9 +255,16 @@ public final class RequestEncryptionAdvice implements ResponseBodyAdvice<Object>
      * @param data 原始数据
      * @return 加密后的数据
      */
-    private EccSecurityData encryptWithECC(String data)  {
+    private EccSecurityData encryptWithECC(String data, RequestEncryption annotation)  {
         try {
-            UserPublicData currentUserPublicData = contextHolder.getAuthenticationUserPublicData();
+            UserPublicData currentUserPublicData;
+            if (annotation.notCertified()) {
+                currentUserPublicData = contextHolder.getAuthenticationUserPublicData(annotation.user());
+            } else {
+                // 有jwt，无需指定 user()
+                currentUserPublicData = contextHolder.getAuthenticationUserPublicData();
+            }
+
             if (currentUserPublicData == null) {
                 throw new ReplayProtectionException("用户密钥查询失败，无法进行数据加密");
             }
@@ -270,8 +275,7 @@ public final class RequestEncryptionAdvice implements ResponseBodyAdvice<Object>
             throw new ReplayProtectionException(
                 "ECC Encryption failed: " + e.getMessage(),
                 "ECC_ENCRYPTION_FAILED",
-                null,
-                null
+                null, null
             );
         }
     }

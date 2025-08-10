@@ -7,5 +7,5 @@ public interface EccUserDataService {
 
     UserPublicData loadUserPublicData(String userId);
 
-    String getCurrentUserId();
+    String getCurrentUser();
 }

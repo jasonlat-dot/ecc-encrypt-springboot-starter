@@ -2,7 +2,10 @@ package io.github.jasonlat.middleware.domain.service.engine.impl;
 
 import com.alibaba.fastjson2.JSONObject;
 import io.github.jasonlat.middleware.annotations.decrypt.RequestDecryption;
+import io.github.jasonlat.middleware.context.EccContext;
+import io.github.jasonlat.middleware.context.EccContextHolder;
 import io.github.jasonlat.middleware.domain.model.entity.EccSecurityData;
+import io.github.jasonlat.middleware.domain.model.entity.UserPublicData;
 import io.github.jasonlat.middleware.domain.service.ECCSecurityService;
 import io.github.jasonlat.middleware.domain.service.engine.HandelDecryptEngine;
 import io.github.jasonlat.middleware.exception.ReplayProtectionException;
@@ -26,9 +29,11 @@ public final class RegisterDecryptEngine implements HandelDecryptEngine {
         JSONObject jsonObject = JSONObject.parseObject(decryptedData);
         String userPublicX = jsonObject.getString(annotation.registerPublicXKey());
         String userPublicY = jsonObject.getString(annotation.registerPublicYKey());
-        if (!StringUtils.hasLength(userPublicX) || !StringUtils.hasLength(userPublicY)) {
-            throw new ReplayProtectionException("userPublicX or userPublicY is empty, please specify a public, SuchAs: \n" +
+        String user = jsonObject.getString(annotation.notIdentUniqueUserKey());
+        if (!StringUtils.hasLength(userPublicX) || !StringUtils.hasLength(userPublicY) || !StringUtils.hasLength(user)) {
+            throw new ReplayProtectionException("userPublicX or userPublicY or username is empty, please specify a public, SuchAs: \n" +
                     "{\n" +
+                    "  \"username\": \"usernameValue\",\n" +
                     "  \"userPublicX\": \"xValue\",\n" +
                     "  \"userPublicY\": \"yValue\",\n" +
                     "  \"data\": {\n" +
@@ -41,6 +46,8 @@ public final class RegisterDecryptEngine implements HandelDecryptEngine {
         if (!verify) {
             throw new ReplayProtectionException("signature verification failed");
         }
+        // 缓存用户公钥
+        EccContextHolder.setContext(EccContext.of(user, new UserPublicData(userPublicX, userPublicY)));
         return decryptedData;
     }
 }

@@ -39,7 +39,7 @@ public class EccAutoConfigure {
             }
 
             @Override
-            public String getCurrentUserId() {
+            public String getCurrentUser() {
                 // 默认逻辑（例如返回匿名用户）
                 throw new UnsupportedOperationException("请自定义 EccUserDataService 实现 getCurrentUserId() 方法");
             }

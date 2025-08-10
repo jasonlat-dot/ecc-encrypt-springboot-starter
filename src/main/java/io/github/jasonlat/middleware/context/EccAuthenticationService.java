@@ -71,24 +71,40 @@ public final class EccAuthenticationService {
 
     }
 
+    public void setContext(String username, UserPublicData userPublicData) {
+        if (!StringUtils.hasLength(username)) {
+            log.warn("userId is empty, skip setContext");
+            return;
+        }
+        if (userPublicData == null) {
+            log.warn("userPublicData is empty, skip setContext");
+            return;
+        }
+        // 3. 创建新的上下文
+        EccContext context = EccContext.of(username, userPublicData);
+
+        // 4. 缓存上下文
+        contextCache.put(username, context);
+
+        // 5. 设置到当前线程
+        EccContextHolder.setContext(context);
+    }
+
     /**
      * 认证用户并设置上下文
      */
     public void authenticate() {
-        String currentUserId = userDataService.getCurrentUserId();
-        if (!StringUtils.hasLength(currentUserId)) {
-            throw new ReplayProtectionException("userDataService.getCurrentUserId() return userId is empty, can't authenticate");
-        }
-        authenticate(currentUserId);
+        String currentUser = userDataService.getCurrentUser();
+        authenticate(currentUser);
     }
     
     /**
      * 刷新用户上下文
-     * @param userId 用户id
+     * @param user 用户唯一标识
      */
-    public void refreshContext(String userId) {
-        contextCache.evict(userId);
-        authenticate(userId);
+    public void refreshContext(String user) {
+        contextCache.evict(user);
+        authenticate(user);
     }
 
     /**

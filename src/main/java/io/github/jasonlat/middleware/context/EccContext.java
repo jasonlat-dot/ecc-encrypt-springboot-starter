@@ -16,14 +16,14 @@ import java.util.concurrent.ConcurrentHashMap;
 public final class EccContext {
 
     private UserPublicData userPublicData;
-    private String userId;
+    private String user;
     private String sessionId;
     private LocalDateTime loadTime;
     private ConcurrentHashMap<String, Object> attributes;
     
-    public static EccContext of(String userId, UserPublicData userData) {
+    public static EccContext of(String user, UserPublicData userData) {
         EccContext context = new EccContext();
-        context.setUserId(userId);
+        context.setUser(user);
         context.setUserPublicData(userData);
         context.setLoadTime(LocalDateTime.now());
         context.setAttributes(new ConcurrentHashMap<>());
@@ -67,7 +67,7 @@ public final class EccContext {
         }
 
         // 记录清理日志
-        log.debug("已清理用户{}的ECC上下文敏感数据", this.userId);
+        log.debug("已清理用户{}的ECC上下文敏感数据", this.user);
     }
 
     /**

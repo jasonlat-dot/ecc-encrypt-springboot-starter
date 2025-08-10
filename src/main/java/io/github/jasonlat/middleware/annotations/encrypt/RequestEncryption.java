@@ -17,8 +17,14 @@ import java.lang.annotation.Target;
 public @interface RequestEncryption {
 
     /**
-     *
+     * 未认证用户, 需要指定user唯一标识
      */
+    String user() default "";
+
+    /**
+     * 是否是给 notCertified 未认证接口加密（没有jwt,且没有经过解密）, 与 user() 搭配使用,
+     */
+    boolean notCertified() default false;
 
     /**
      * @return 是否启用压缩

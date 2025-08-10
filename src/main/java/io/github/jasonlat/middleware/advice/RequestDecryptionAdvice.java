@@ -105,7 +105,7 @@ public final class RequestDecryptionAdvice implements RequestBodyAdvice {
             RequestDecryption annotation = getAnnotation(method);
             if (annotation != null && annotation.enableLog()) {
                 logger.info("begin_processing_the_request_decryption - Method: {},", method.getName());
-                String decryptBody = processDecryption(bodyString, method, targetType);
+                String decryptBody = processDecryption(bodyString, method);
                 InputStream inputStream = IOUtils.toInputStream(decryptBody, StandardCharsets.UTF_8);
                 // 返回解密后的数据
                 logger.info("end_processing_the_request_decryption - Method: {},", method.getName());
@@ -166,10 +166,9 @@ public final class RequestDecryptionAdvice implements RequestBodyAdvice {
      * 
      * @param body 加密的请求体
      * @param method 方法
-     * @param targetType 目标类型
      * @return 解密后的请求体
      */
-    private String processDecryption(String body, Method method, Type targetType) {
+    private String processDecryption(String body, Method method) {
         
         RequestDecryption annotation = getAnnotation(method);
         if (annotation == null) {
